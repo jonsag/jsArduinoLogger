@@ -1,0 +1,45 @@
+        Install LAMP
+# apt-get install apache2 mysql-server php5 php5-mysql
+
+        Make sure your /etc/hosts has an entry for the arduino, for example:
+        192.168.5.147   arduino1
+
+        Setup database and user
+# mysql -u root < arduino-setup.sql
+
+        Add tables to the new database
+# mysql -u arduino -parduinopass arduino1 < arduino-tables.sql
+
+        Copy contents of arduinolog to webroot
+# cp -r arduinolog /var/www/
+
+        Download jpgraph and extract ( http://jpgraph.net/download/ )
+# tar zxvf jpgraph* -C /var/www/
+# cd /var/www/arduinolog
+# ln -s ../jpgraph*/src jpgraph
+
+        Correct a line in jpgraph
+# emacs jpgraph/gd_image.inc.php
+        Look for a line starting with "JpGraphError::RaiseL(25128);//('The function imageantialias()...",
+        and comment it out with //
+
+        Download calendar_localized and unzip it ( http://www.triconsole.com/php/calendar_datepicker.php)
+# unzip calendar_localized*
+        Move folder to correct location
+# mv calendar /var/www/ardionolog/
+
+        Install some fonts
+# apt-get install ttf-mscorefonts-installer
+        Add some symbolic link
+# cd /usr/share/fonts/truetype
+# ln -s msttcorefonts/arialbd.ttf arialbd.ttf
+# ln -s msttcorefonts/arial.ttf arial.ttf
+
+        Change ownership
+# chown www-data:www-data -R /var/www/arduinolog
+# chown www-data:www-data -R /var/www/jpgraph*
+
+        Add a line to your crontab
+# crontab -e
+        Add the following:
+        */2 * * * * /usr/bin/php /var/www/arduinolog/arduinoPoller.php 0 1 cron > /dev/null 2>&1
